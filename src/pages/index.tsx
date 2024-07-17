@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { createPublicClient, createWalletClient, custom, parseUnits } from 'viem';
+import { createPublicClient, createWalletClient, custom, parseUnits, Address } from 'viem';
 import { mainnet } from 'viem/chains';
 
 const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
@@ -67,7 +67,7 @@ function App() {
     setLoggedIn(false);
   };
 
-  const getAccounts = async () => {
+  const getAccounts = async (): Promise<Address | undefined> => {
     if (!provider) {
       uiConsole("provider not initialized yet");
       return;
@@ -81,7 +81,7 @@ function App() {
     try {
       const addresses = await walletClient.getAddresses();
       uiConsole(addresses);
-      return addresses[0]; // Assuming the first address is used
+      return addresses[0] as Address; // Assuming the first address is used
     } catch (error) {
       console.error("Error getting accounts:", error);
     }
@@ -170,7 +170,7 @@ function App() {
 
       // Sign the message
       const signedMessage = await walletClient.signMessage({
-        account: address[0],
+        account: address,
         message: originalMessage,
       });
 
