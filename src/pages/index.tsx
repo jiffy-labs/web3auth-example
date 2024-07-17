@@ -7,18 +7,18 @@ import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { createPublicClient, createWalletClient, custom, parseUnits, Address } from 'viem';
-import { mainnet } from 'viem/chains';
+import { NETWORK_RPC_MAP } from "./constants";
 
-const clientId = "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
+const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID;
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0x13", // hex of 19 for Songbird Canary network
-  rpcTarget: "https://songbird-api.flare.network/ext/C/rpc",
-  displayName: "Songbird canary network",
-  blockExplorerUrl: "https://songbird-explorer.flare.network",
-  ticker: "SGB",
-  tickerName: "SGB",
+  chainId: "0x13308", // hex of 19 for Songbird Canary network
+  rpcTarget: "https://rpc-vanguard.vanarchain.com/",
+  displayName: "Vanar Network",
+  blockExplorerUrl: "https://explorer-vanguard.vanarchain.com/",
+  ticker: "VANRY",
+  tickerName: "VANRY",
   logo: "https://cryptologos.cc/logos/flare-flr-logo.png",
 };
 
@@ -27,8 +27,8 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
 });
 
 const web3auth = new Web3Auth({
-  clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+  clientId: clientId || "",
+  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   privateKeyProvider,
 });
 
@@ -74,7 +74,7 @@ function App() {
     }
 
     const walletClient = createWalletClient({
-      chain: mainnet,
+      chain: NETWORK_RPC_MAP[78600],
       transport: custom(provider),
     });
 
@@ -94,7 +94,7 @@ function App() {
     }
 
     const publicClient = createPublicClient({
-      chain: mainnet,
+      chain: NETWORK_RPC_MAP[78600],
       transport: custom(provider),
     });
 
@@ -117,7 +117,7 @@ function App() {
     }
 
     const walletClient = createWalletClient({
-      chain: mainnet,
+      chain: NETWORK_RPC_MAP[78600],
       transport: custom(provider),
     });
 
@@ -139,7 +139,7 @@ function App() {
 
       // Wait for transaction receipt if needed
       const publicClient = createPublicClient({
-        chain: mainnet,
+        chain: NETWORK_RPC_MAP[78600],
         transport: custom(provider),
       });
 
@@ -157,7 +157,7 @@ function App() {
     }
 
     const walletClient = createWalletClient({
-      chain: mainnet,
+      chain: NETWORK_RPC_MAP[78600],
       transport: custom(provider),
     });
 
