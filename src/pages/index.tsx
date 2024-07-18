@@ -8,6 +8,7 @@ import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { createPublicClient, createWalletClient, custom, parseUnits, Address } from 'viem';
 import { NETWORK_RPC_MAP } from "./constants";
+import Link from "next/link";
 
 const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID;
 
@@ -202,6 +203,7 @@ function App() {
       <button onClick={signMessage} className="btn">
         Sign Message
       </button>
+      <Link href="/Mint" className="btn items-center text-center">Mint Tokens</Link>
       <button onClick={logout} className="btn">
         Log Out
       </button>
