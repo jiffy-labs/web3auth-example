@@ -20,7 +20,30 @@ const vanarTestnetChain = defineChain({
     rpcUrls: {
         default: {
             http: ["https://rpca-vanguard.vanarchain.com/"],
-            webSocket: ["wss://ws-vanguard.vanarchain.com/"],
+            webSocket: ["wss://ws.vanarchain.com/"],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "https://explorer-vanguard.vanarchain.com",
+        },
+    },
+})
+
+const vanarMainnetChain = defineChain({
+    // vanar testnet
+    id: 2040,
+    name: "VANRY_TESTNET",
+    nativeCurrency: {
+        decimals: 18,
+        name: "VANRY",
+        symbol: "VANRY",
+    },
+    rpcUrls: {
+        default: {
+            http: ["https://rpc.vanarchain.com/"],
+            webSocket: ["wss://ws.vanarchain.com/"],
         },
     },
     blockExplorers: {
@@ -51,6 +74,7 @@ function useSmartAccount() {
     useEffect(() => {
         const init = async () => {
             if (!provider) return;
+            console.log(provider)
             const smartAccountSigner = await providerToSmartAccountSigner(provider as EIP1193Provider)
             setSmartAccountSigner(smartAccountSigner);
 
@@ -66,7 +90,7 @@ function useSmartAccount() {
             })
 
             const publicClient = createPublicClient({
-                transport: http("https://rpc-vanguard.vanarchain.com/"),
+                transport: http("https://rpca-vanguard.vanarchain.com/"),
                 chain: vanarTestnetChain,
             })
 
@@ -99,12 +123,14 @@ function useSmartAccount() {
         console.log('smart account', smartAccountClient.account?.address)
     })
 
-    const sendTransaction = async (to: `0x${string}`, value: bigint) => {
+    const sendTransaction = async (to: `0x${string}`, value: bigint, data: `0x${string}`) => {
         if (!smartAccountClient) return;
+        console.log('data', data);
         //@ts-ignore
         const tx = await smartAccountClient.sendTransaction({
             to,
             value,
+            data,
             maxFeePerGas: BigInt(1000000000),
             maxPriorityFeePerGas: BigInt(1000000000)
         })
@@ -112,7 +138,7 @@ function useSmartAccount() {
         return tx;
     }
 
-    return { provider, setProvider, sendTransaction };
+    return { provider, setProvider, sendTransaction, smartAccountClient, simpleSmartAccount };
 }
 
 export default useSmartAccount;

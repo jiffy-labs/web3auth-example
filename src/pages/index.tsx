@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { createPublicClient, createWalletClient, custom, parseUnits, Address } from "viem";
+import { createPublicClient, createWalletClient, custom, parseUnits, Address, encodeFunctionData } from "viem";
 import { NETWORK_RPC_MAP } from "./constants";
 import useSmartAccount from "@/hooks/smartAccount";
 
@@ -22,7 +22,7 @@ const chainConfig = {
     tickerName: "VANRY",
     logo: "https://cryptologos.cc/logos/flare-flr-logo.png",
 };
-
+const chainId = 78600;
 const privateKeyProvider = new EthereumPrivateKeyProvider({
     config: { chainConfig },
 });
@@ -34,7 +34,7 @@ const web3auth = new Web3Auth({
 });
 
 function App() {
-    const { provider, setProvider, sendTransaction: sendSmartTransaction } = useSmartAccount();
+    const { provider, setProvider, sendTransaction: sendSmartTransaction, simpleSmartAccount, smartAccountClient } = useSmartAccount();
     const [loggedIn, setLoggedIn] = useState(false);
 
     useEffect(() => {
@@ -74,15 +74,10 @@ function App() {
             return;
         }
 
-        const walletClient = createWalletClient({
-            chain: NETWORK_RPC_MAP[78600],
-            transport: custom(provider),
-        });
-
         try {
-            const addresses = await walletClient.getAddresses();
-            uiConsole(addresses);
-            return addresses[0] as Address; // Assuming the first address is used
+            const address = await simpleSmartAccount?.address;
+            uiConsole(address);
+            return address as Address; // Assuming the first address is used
         } catch (error) {
             console.error("Error getting accounts:", error);
         }
@@ -95,16 +90,16 @@ function App() {
         }
 
         const publicClient = createPublicClient({
-            chain: NETWORK_RPC_MAP[78600],
+            chain: NETWORK_RPC_MAP[chainId],
             transport: custom(provider),
         });
 
         try {
             const address = await getAccounts();
-            if (!address) {
+            if (!simpleSmartAccount?.address) {
                 throw new Error("Address not found");
             }
-            const balance = await publicClient.getBalance({ address });
+            const balance = await publicClient.getBalance({ address: simpleSmartAccount?.address });
             uiConsole({ balance: balance.toString() }); // Convert BigInt to string
         } catch (error) {
             console.error("Error getting balance:", error);
@@ -118,8 +113,45 @@ function App() {
         }
 
         try {
-            const receipt = await sendSmartTransaction("0x0B3074cd5891526420d493B13439f3D4b8be6144", BigInt("0"));
-            uiConsole("Transaction Receipt:", receipt);
+            uiConsole("Sending transaction...");
+            const txHash = await sendSmartTransaction("0x0B3074cd5891526420d493B13439f3D4b8be6144", BigInt("0"), "0x");
+            uiConsole("Transaction Receipt:", txHash);
+        } catch (error) {
+            console.error("Error sending transaction:", error);
+        }
+    };
+
+    const mintTokens = async () => {
+        if (!smartAccountClient) {
+            uiConsole("smartAccountClient not initialized yet");
+            return;
+        }
+        try {
+            uiConsole("Minting 50 tokens...");
+            const txHash = await sendSmartTransaction(
+                "0x50F35326EBf1d8A0BE4Fc9910e6fFcD9A1F4ea22",
+                BigInt("0"),
+                encodeFunctionData({
+                    functionName: "mintFifty",
+                    abi: [
+                        {
+                            inputs: [
+                                {
+                                    internalType: "uint256",
+                                    name: "_amount",
+                                    type: "uint256",
+                                },
+                            ],
+                            name: "mintFifty",
+                            outputs: [],
+                            stateMutability: "nonpayable",
+                            type: "function",
+                        },
+                    ],
+                    args: [BigInt("50")],
+                })
+            );
+            uiConsole("Transaction Receipt:", txHash);
         } catch (error) {
             console.error("Error sending transaction:", error);
         }
@@ -132,7 +164,7 @@ function App() {
         }
 
         const walletClient = createWalletClient({
-            chain: NETWORK_RPC_MAP[78600],
+            chain: NETWORK_RPC_MAP[chainId],
             transport: custom(provider),
         });
 
@@ -174,8 +206,8 @@ function App() {
             <button onClick={sendTransaction} className="btn">
                 Send Transaction
             </button>
-            <button onClick={signMessage} className="btn">
-                Sign Message
+            <button onClick={mintTokens} className="btn">
+                Mint Tokens
             </button>
             <button onClick={logout} className="btn">
                 Log Out
@@ -191,7 +223,7 @@ function App() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
-            <h1 className="text-4xl font-bold mb-8">Web3Auth & Viem Integration</h1>
+            <h1 className="text-4xl font-bold mb-8">Account Abstraction Flow</h1>
             <div className="w-full max-w-md mx-auto">
                 <div className="grid gap-4">{loggedIn ? loggedInView : unloggedInView}</div>
                 <div id="console" className="mt-4">
